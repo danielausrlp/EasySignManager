@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.34301.259
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EasySignManager", "EasySignManager\EasySignManager.csproj", "{67C083C0-D1D0-4D31-AC05-72D7514477EE}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{67C083C0-D1D0-4D31-AC05-72D7514477EE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{67C083C0-D1D0-4D31-AC05-72D7514477EE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{67C083C0-D1D0-4D31-AC05-72D7514477EE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{67C083C0-D1D0-4D31-AC05-72D7514477EE}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {4A205F84-E117-4927-AFC4-EC8E54392512}
+	EndGlobalSection
+EndGlobal
