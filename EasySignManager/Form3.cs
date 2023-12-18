@@ -60,12 +60,15 @@ namespace EasySignManager
                 MessageBox.Show("Der Raum existiert schon.");
             } else
             {
-                ftp.addRoom(this.textBox1.Text);
-                MessageBox.Show("Raum wurde angelegt.");
+                if (ftp.addRoom(this.textBox1.Text))
+                {
+                    MessageBox.Show("Raum wurde angelegt.");
+                    ftp.loadRoomList(prt.listBox1);
+                }
+                else
+                    MessageBox.Show("Raum konnte nicht angelegt werden.");
             }
 
-            prt.listBox1.Items.Clear();
-            ftp.loadRoomList(prt.listBox1);
 
         }
     }

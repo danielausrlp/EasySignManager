@@ -33,14 +33,18 @@ namespace EasySignManager
             initConfig();
         }
 
-        //Enable settings button again after closing
+        //Enable settings button again after closing and check if server is available
         private void Form2_Closed(object sender, EventArgs e)
         {
-
+            //utter bullshit
+            ftpmanager ftp = new ftpmanager(this.textBox1.Text, this.textBox2.Text, this.textBox3.Text, this.textBox4.Text);
             parent.configfile.writeConfig(this.textBox1.Text, this.textBox2.Text, this.textBox3.Text, this.textBox4.Text);
             //update current configs to config class
             parent.configfile.loadConfig();
+            ftp.loadRoomList(parent.listBox1);
+
             parent.Enabled = true;
+
 
         }
 

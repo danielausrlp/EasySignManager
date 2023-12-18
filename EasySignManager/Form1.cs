@@ -85,12 +85,55 @@ namespace EasySignManager
         private void listBox1_SelectedIndexChanged(object sender, EventArgs e)
         {
             button4.Enabled = true;
+            button1.Enabled = true;
+            ftpmanager ftp = new ftpmanager(configfile);
+
+            if(listBox1.SelectedItem == null)
+                return;
+
+
+            Image im = ftp.getPicture(listBox1.SelectedItem.ToString());
+
+            if(im == null)
+            {
+                MessageBox.Show("Fehler beim Downloaden / Darstellen des Bildes.");
+                pictureBox1.Image = null;
+            }
+            else
+            {
+                pictureBox1.Image = im;
+            }
+
         }
 
         //delete the currently selected room
         private void button4_Click(object sender, EventArgs e)
         {
-            
+
+            ftpmanager ftp = new ftpmanager(configfile);
+            DialogResult dialogResult = MessageBox.Show("Wollen Sie den Raum " + listBox1.SelectedItem.ToString() + " wirklich löschen?", "Raum löschen", MessageBoxButtons.YesNo);
+
+            if(dialogResult == DialogResult.Yes)
+            {
+                if (!ftp.deleteRoom(listBox1.SelectedItem.ToString()))
+                {
+                    MessageBox.Show("Raum konnte nicht gelöscht werden.");
+                }
+
+            }
+
+
+            ftp.loadRoomList(this.listBox1);
+
+            //disable button if listbox is empty
+            if (listBox1.Items.Count == 0)
+            {
+                button4.Enabled = false;
+                button1.Enabled = false;
+            }
+
+            pictureBox1.Image = null;
+
         }
 
         //Creates/Loads config file on startup and calls loadRoomList() TODO: Check for invalid/non existing config file
@@ -119,9 +162,39 @@ namespace EasySignManager
         //Upload button
         private void button1_Click(object sender, EventArgs e)
         {
+            ftpmanager ftp = new ftpmanager(configfile);
 
+            string filePath = "";
+
+
+            using (OpenFileDialog openFileDialog = new OpenFileDialog())
+            {
+                openFileDialog.InitialDirectory = "c:\\";
+                openFileDialog.Filter = "png files (*.png)|*.png|jpg files (*.jpg)|*.jpg";
+                openFileDialog.FilterIndex = 1;
+                openFileDialog.RestoreDirectory = true;
+
+                if (openFileDialog.ShowDialog() == DialogResult.OK)
+                {
+
+                    filePath = openFileDialog.FileName;
+
+                    if (ftp.uploadPicture(filePath, listBox1.SelectedItem.ToString()))
+                    {
+                        MessageBox.Show("Bild wurde hochgeladen.");
+                        pictureBox1.Image = new Bitmap(filePath);
+                    } else
+                    {
+                        MessageBox.Show("Bild konnte nicht hochgeladen werden.");
+                    }
+
+                }
+
+
+            }
 
         }
+
 
     }
 
@@ -137,7 +210,7 @@ namespace EasySignManager
 
 
 
-        //constructor that adds ftp:// to the address WHY?
+        //constructor that adds ftp:// to the address 
         public ftpmanager(string a, string u, string p, string spath)
         {
             address = "ftp://" + a;
@@ -166,14 +239,14 @@ namespace EasySignManager
 
             try
             {
-                MessageBox.Show(address + path + s);
+                //MessageBox.Show(address + path + s);
                 WebRequest request = WebRequest.Create(address + path + s);
                 request.Credentials = new NetworkCredential(username, password);
                 request.Method = WebRequestMethods.Ftp.MakeDirectory;
                 
                 using (FtpWebResponse response = (FtpWebResponse)request.GetResponse())
                 {
-                    MessageBox.Show(response.StatusCode.ToString());
+                    //MessageBox.Show(response.StatusCode.ToString());
                 }
 
 
@@ -194,31 +267,25 @@ namespace EasySignManager
         //returns 1 on success, 0 on failure
         public bool deleteRoom(string s)
         {
-            bool isDeleted = true;
-
-            try
+            
+            //if room is empty, just delete
+            if (isEmpty(s))
             {
-                WebRequest request = WebRequest.Create(address + path + s);
-                request.Credentials = new NetworkCredential(username, password);
-                request.Method = WebRequestMethods.Ftp.RemoveDirectory;
-
-                using (FtpWebResponse response = (FtpWebResponse)request.GetResponse())
-                {
-                    MessageBox.Show(response.StatusCode.ToString());
-                }
-
-
-
-            }
-            catch (Exception ex)
+                if (deleteDir(s))
+                    return true;
+                else
+                    return false;
+                
+            } else //delete the files 
             {
-                MessageBox.Show(ex.Message);
-                isDeleted = false;
 
+                if (deleteAllFiles(s) && deleteDir(s))
+                    return true;
+                else
+                    return false;
             }
 
 
-            return isDeleted;
         }
 
         //Check if a room is already existing
@@ -262,6 +329,8 @@ namespace EasySignManager
 
             string[] arr = null;
 
+            l.Items.Clear();
+
             try
             {
                 FtpWebRequest request = (FtpWebRequest)WebRequest.Create(address + path);
@@ -275,7 +344,7 @@ namespace EasySignManager
 
                     string temp = reader.ReadToEnd();
 
-                    arr = temp.Split('\n');
+                    arr = temp.Split(new string[] { Environment.NewLine }, StringSplitOptions.None);
 
                     reader.Close();
                 }
@@ -283,6 +352,7 @@ namespace EasySignManager
             } catch (Exception ex)
             {
                 MessageBox.Show(ex.Message);
+                return;
             }
 
             //dirty hack to filter out whitespace
@@ -295,6 +365,200 @@ namespace EasySignManager
             }
 
         }
+
+        //upload a picture to the ftp server, calls uploadFile | returns true on success, false on failure
+        public bool uploadPicture(string p_path, string roomName)
+        {
+
+                    byte[] data = File.ReadAllBytes(p_path);
+
+                    try
+                    {
+                        WebRequest request = WebRequest.Create(address + path + roomName + "/bild.png");
+                        request.Credentials = new NetworkCredential(username, password);
+                        request.Method = WebRequestMethods.Ftp.UploadFile;
+
+
+                        using (MemoryStream fs = new MemoryStream(data))
+                        {
+                            using (Stream ftpStream = request.GetRequestStream())
+                            {
+                                fs.CopyTo(ftpStream);
+                            }
+                        }
+
+
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show(ex.Message);
+                        return false;
+                    }
+
+            return true;
+
+            }
+
+        //gets the picture of given room
+        public Image getPicture(string roomName)
+        {
+
+
+            try
+            {
+                WebRequest request = WebRequest.Create(address + path + roomName + "/bild.png");
+                request.Credentials = new NetworkCredential(username, password);
+                request.Method = WebRequestMethods.Ftp.DownloadFile;
+
+                using(WebResponse response = request.GetResponse())
+                {
+                    Stream s = response.GetResponseStream();
+                    return Image.FromStream(s);
+                }
+
+            }
+            catch (Exception ex)
+            {
+                //MessageBox.Show(ex.Message);
+                return null;
+            }
+
+            
+
+
+        }
+
+        //checks if room is empty (no pictures)
+        public bool isEmpty(string roomName)
+        {
+            try
+            {
+                FtpWebRequest request = (FtpWebRequest)WebRequest.Create(address + path + roomName);
+                request.Credentials = new NetworkCredential(username, password);
+                request.Method = WebRequestMethods.Ftp.ListDirectory;
+
+                using(FtpWebResponse response = (FtpWebResponse)request.GetResponse())
+                {
+                    Stream s = response.GetResponseStream();
+
+                    StreamReader sr = new StreamReader(s);
+
+                    if (sr.ReadToEnd() == "")
+                        return true;
+                    else
+                        return false;
+
+                }
+
+
+            }
+            catch (WebException ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+
+
+            return false;
+
+        }
+
+        //deletes all files in a directory
+        public bool deleteAllFiles(string roomName) {
+
+            string[] files = null;
+
+            try
+            {
+                FtpWebRequest request = (FtpWebRequest)WebRequest.Create(address + path + roomName);
+                request.Credentials = new NetworkCredential(username, password);
+                request.Method = WebRequestMethods.Ftp.ListDirectory;
+
+                using (FtpWebResponse response = (FtpWebResponse)request.GetResponse())
+                {
+                    Stream responeStream = response.GetResponseStream();
+                    StreamReader reader = new StreamReader(responeStream);
+
+                    string temp = reader.ReadToEnd();
+                    string al = temp.Replace(roomName, "");
+                    //MessageBox.Show(al);
+
+                    files = al.Split(new string[] { Environment.NewLine }, StringSplitOptions.None);
+
+                    reader.Close();
+                }
+
+            }
+            catch (WebException ex)
+            {
+                MessageBox.Show(ex.Message);
+                return false;
+            }
+
+            foreach(string s in files)
+            {
+
+                if (s == "")
+                    continue;
+
+                try
+                {
+
+                    WebRequest request = WebRequest.Create(address + path + roomName + "/" + s);
+                    request.Credentials = new NetworkCredential(username, password);
+                    request.Method = WebRequestMethods.Ftp.DeleteFile;
+
+                    using(FtpWebResponse response = (FtpWebResponse)request.GetResponse())
+                    {
+                        
+                    }
+
+
+                } catch(Exception ex)
+                {
+                    MessageBox.Show(ex.Message);
+                    return false;
+                }
+
+                
+
+            }
+
+            
+            return true;
+
+        }
+
+        //delete dir
+        public bool deleteDir(string s)
+        {
+
+            try
+            {
+                WebRequest request = WebRequest.Create(address + path + s);
+                request.Credentials = new NetworkCredential(username, password);
+                request.Method = WebRequestMethods.Ftp.RemoveDirectory;
+
+                using (FtpWebResponse response = (FtpWebResponse)request.GetResponse())
+                {
+                    //MessageBox.Show(response.StatusCode.ToString());
+                }
+
+
+
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+                return false;
+
+            }
+
+            return true;
+        }
+
+
+    }
+
 
     }
 
@@ -430,4 +694,4 @@ namespace EasySignManager
 
     }
    
-}
+
