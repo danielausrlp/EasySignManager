@@ -289,10 +289,10 @@ namespace EasySignManager
         }
 
         //Check if a room is already existing
-        //returns 1 on exist, 0 on non existance
+        //returns 1 on exist, 0 on non existance TODO: not working as intented
         public bool isRoomExistant(string s)
         {
-            bool exist = false;
+            
 
             try
             {
@@ -302,7 +302,8 @@ namespace EasySignManager
 
                 using (FtpWebResponse response = (FtpWebResponse)request.GetResponse())
                 {
-                    exist = true;
+                    MessageBox.Show(response.StatusCode.ToString());
+                    return true;
                 }
 
             } catch (WebException ex)
@@ -311,6 +312,7 @@ namespace EasySignManager
                 if(ex.Response != null)
                 {
                     FtpWebResponse response = (FtpWebResponse)ex.Response;
+                    MessageBox.Show(response.StatusCode.ToString());
                     if (response.StatusCode == FtpStatusCode.ActionNotTakenFileUnavailable)
                     {
                         return false;
@@ -320,7 +322,7 @@ namespace EasySignManager
             }
 
 
-            return exist;
+            return false;
         }
 
         //fills the listbox with the rooms
@@ -419,7 +421,7 @@ namespace EasySignManager
             }
             catch (Exception ex)
             {
-                //MessageBox.Show(ex.Message);
+                MessageBox.Show(ex.Message);
                 return null;
             }
 
@@ -601,7 +603,7 @@ namespace EasySignManager
                 s_password = arr[2];
 
                 if (arr[3] == "")
-                    s_path = "\\";
+                    s_path = "/";
                 else
                     s_path = arr[3];
             }
