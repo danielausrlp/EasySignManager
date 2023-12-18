@@ -9,7 +9,8 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Net;
 using System.IO;
-
+using System.Reflection;
+using System.Drawing.Imaging;
 
 namespace EasySignManager
 {
@@ -302,7 +303,7 @@ namespace EasySignManager
 
                 using (FtpWebResponse response = (FtpWebResponse)request.GetResponse())
                 {
-                    MessageBox.Show(response.StatusCode.ToString());
+                    //MessageBox.Show(response.StatusCode.ToString());
                     return true;
                 }
 
@@ -312,7 +313,7 @@ namespace EasySignManager
                 if(ex.Response != null)
                 {
                     FtpWebResponse response = (FtpWebResponse)ex.Response;
-                    MessageBox.Show(response.StatusCode.ToString());
+                    //MessageBox.Show(response.StatusCode.ToString());
                     if (response.StatusCode == FtpStatusCode.ActionNotTakenFileUnavailable)
                     {
                         return false;
@@ -558,11 +559,47 @@ namespace EasySignManager
             return true;
         }
 
+        //upload picture with placeholder overload
+        public bool uploadPicture(string roomName)
+        {
+
+            Image i = Properties.Resources.platzhalter;
+
+            try
+            {
+                WebRequest request = WebRequest.Create(address + path + roomName + "/bild.png");
+                request.Credentials = new NetworkCredential(username, password);
+                request.Method = WebRequestMethods.Ftp.UploadFile;
+
+
+                using (MemoryStream s = new MemoryStream())
+                {
+                    i.Save(s, ImageFormat.Png);
+                    s.Position = 0;
+                    using (Stream ftpStream = request.GetRequestStream())
+                    {
+                        s.CopyTo(ftpStream);
+                    }
+                }
+
+
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+                return false;
+            }
+
+            return true;
+
+        }
+
+
 
     }
 
 
-    }
+}
 
     //Config File class
     public class config

@@ -63,6 +63,7 @@ namespace EasySignManager
                 if (ftp.addRoom(this.textBox1.Text))
                 {
                     MessageBox.Show("Raum wurde angelegt.");
+                    ftp.uploadPicture(this.textBox1.Text);
                     ftp.loadRoomList(prt.listBox1);
                 }
                 else
