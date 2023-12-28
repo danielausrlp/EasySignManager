@@ -29,10 +29,18 @@ namespace EasySignManager
         private void button2_Click(object sender, EventArgs e)
         {
 
+
+
             //Disable form after going to settings, reenabling after closing settings
             Form2 form2 = new Form2(this);
             form2.Show();
             this.Enabled = false;
+
+            //uh...
+            button1.Enabled = false;
+            button4.Enabled = false;
+
+
 
         }
 
@@ -90,7 +98,12 @@ namespace EasySignManager
             ftpmanager ftp = new ftpmanager(configfile);
 
             if(listBox1.SelectedItem == null)
+            {
+                button4.Enabled = false;
+                button1.Enabled = false;
                 return;
+            }
+                
 
 
             Image im = ftp.getPicture(listBox1.SelectedItem.ToString());
@@ -119,8 +132,11 @@ namespace EasySignManager
                 if (!ftp.deleteRoom(listBox1.SelectedItem.ToString()))
                 {
                     MessageBox.Show("Raum konnte nicht gelöscht werden.");
+                    return;
                 }
 
+                button1.Enabled = false;
+                button4.Enabled = false;
             }
 
 
@@ -155,7 +171,9 @@ namespace EasySignManager
 
             if(listBox1.SelectedItem != null)
             {
-                MessageBox.Show(listBox1.SelectedItem.ToString());
+                Form5 form = new Form5(this);
+                form.Show();
+                this.Enabled = false;
             }
 
         }
@@ -617,7 +635,7 @@ namespace EasySignManager
         string configpath = System.IO.Path.Combine(dirpath, configtxt);
 
         //saves the unformatted config content 
-        public string configcontent;
+        public string configcontent = "";
 
 
         //Default Constructor, auto loads default config
@@ -658,79 +676,72 @@ namespace EasySignManager
         public void loadConfig() {
 
 
-            try
+        try
+        {
+            if (!File.Exists(configpath))
             {
-                if (!File.Exists(configpath))
-                {
-                    File.Create(configpath);
-                }
-                else
-                {
-                    string content;
+                FileStream fs = File.Create(configpath);
+                fs.Close();
+                return;
+            }
+            else
+            {
+                string content;
 
-                        using (StreamReader sr = new StreamReader(configpath))
-                        {
-                            content = sr.ReadToEnd();
-                            configcontent = content;
-
-                        }
+                using (StreamReader sr = new StreamReader(configpath))
+                {
+                    content = sr.ReadToEnd();
+                    configcontent = content;
 
                 }
 
             }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message);
-            }
-
-
-            applyConfig();
 
         }
+        catch (Exception ex)
+        {
+            MessageBox.Show(ex.Message);
+        }
+
+        applyConfig();
+
+    }
 
         //Write new config to config file
         public void writeConfig(string a, string u, string p, string path)
+    {
+
+        try
         {
 
-            try
+            using (StreamWriter sr = new StreamWriter(configpath))
             {
 
-                    
-                        using (StreamWriter sr = new StreamWriter(configpath))
-                        {
 
+                sr.Write(a);
+                sr.Write(";");
+                sr.Write(u);
+                sr.Write(";");
+                sr.Write(p);
+                sr.Write(";");
 
-                            sr.Write(a);
-                            sr.Write(";");
-                            sr.Write(u);
-                            sr.Write(";");
-                            sr.Write(p);
-                            sr.Write(";");
-
-                            if (!(path == ""))
-                            {
-                                 sr.Write(path);
-                                 sr.Write(";");
-                            }
-
-
-
-                        
-
+                if (!(path == ""))
+                {
+                    sr.Write(path);
                 }
 
-                
-
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message);
             }
 
         }
-
-
+        catch (Exception ex)
+        {
+            MessageBox.Show(ex.Message);
+        }
 
     }
-   
+
+
+
+}
+
 
