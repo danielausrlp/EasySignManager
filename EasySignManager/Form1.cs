@@ -449,6 +449,65 @@ namespace EasySignManager
 
         }
 
+        //Gets the server-sided config for a givin client
+        public string getClientConfig(string roomName) 
+        {
+
+            try
+            {
+                WebRequest request = WebRequest.Create(address + path + roomName + "/config.txt");
+                request.Credentials = new NetworkCredential(username, password);
+                request.Method = WebRequestMethods.Ftp.DownloadFile;
+
+                using (WebResponse response = request.GetResponse())
+                {
+                    Stream s = response.GetResponseStream();
+                    StreamReader sr = new StreamReader(s);
+
+                    return sr.ReadLine();
+
+                }
+
+            }
+            catch (Exception ex)
+            {
+                return null;
+            }
+
+            
+        }
+
+        //Uploads the server-sided config to the FTP Server
+        public bool uploadClientConfig(string roomName, string data) 
+        {
+
+            try
+            {
+                WebRequest request = WebRequest.Create(address + path + roomName + "/config.txt");
+                request.Credentials = new NetworkCredential(username, password);
+                request.Method = WebRequestMethods.Ftp.UploadFile;
+
+
+                using (MemoryStream fs = new MemoryStream(Encoding.ASCII.GetBytes(data)))
+                {
+                    using (Stream ftpStream = request.GetRequestStream())
+                    {
+                        fs.CopyTo(ftpStream);
+                    }
+                }
+
+
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+                return false;
+            }
+
+            return false;
+
+        }
+
         //checks if room is empty (no pictures)
         public bool isEmpty(string roomName)
         {
@@ -744,4 +803,5 @@ namespace EasySignManager
 
 }
 
+    
 
