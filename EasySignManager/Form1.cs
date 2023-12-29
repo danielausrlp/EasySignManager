@@ -671,6 +671,40 @@ namespace EasySignManager
 
         }
 
+        //upload dated image
+        public bool uploadDatedPicture(string p_path, string roomName)
+        {
+
+            byte[] data = File.ReadAllBytes(p_path);
+
+            try
+            {
+                WebRequest request = WebRequest.Create(address + path + roomName + "/bild2.png");
+                request.Credentials = new NetworkCredential(username, password);
+                request.Method = WebRequestMethods.Ftp.UploadFile;
+
+
+                using (MemoryStream fs = new MemoryStream(data))
+                {
+                    using (Stream ftpStream = request.GetRequestStream())
+                    {
+                        fs.CopyTo(ftpStream);
+                    }
+                }
+
+
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+                return false;
+            }
+
+            return true;
+
+        }
+
+
 
 
     }
