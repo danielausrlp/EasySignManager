@@ -393,6 +393,8 @@ namespace EasySignManager
 
                     byte[] data = File.ReadAllBytes(p_path);
 
+                    data = convertImageToPng(data);
+
                     try
                     {
                         WebRequest request = WebRequest.Create(address + path + roomName + "/bild.png");
@@ -705,6 +707,24 @@ namespace EasySignManager
         }
 
 
+        //converts a byte[] image to png format and returns it
+        public byte[] convertImageToPng(byte[] rawData) {
+
+            Image temp;
+
+            using(var ms = new MemoryStream(rawData))
+            {
+                temp = Image.FromStream(ms);
+
+                using(var ms2 = new MemoryStream())
+                {
+                    temp.Save(ms2, ImageFormat.Png);
+                    return ms2.ToArray();
+                }
+            }
+
+        
+        }
 
 
     }
