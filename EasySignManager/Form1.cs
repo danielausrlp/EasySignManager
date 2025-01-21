@@ -393,6 +393,13 @@ namespace EasySignManager
 
                     byte[] data = File.ReadAllBytes(p_path);
 
+                    String hash;
+
+                    using (var sha1 = new System.Security.Cryptography.SHA1CryptoServiceProvider())
+                    {
+                        hash = string.Concat(sha1.ComputeHash(data).Select(x => x.ToString("X2")));
+                    }
+
                     data = convertImageToPng(data);
 
                     try
@@ -417,6 +424,29 @@ namespace EasySignManager
                         MessageBox.Show(ex.Message);
                         return false;
                     }
+
+            try
+            {
+                WebRequest request = WebRequest.Create(address + path + roomName + "/hash.txt");
+                request.Credentials = new NetworkCredential(username, password);
+                request.Method = WebRequestMethods.Ftp.UploadFile;
+
+
+                using (MemoryStream fs = new MemoryStream(Encoding.ASCII.GetBytes(hash)))
+                {
+                    using (Stream ftpStream = request.GetRequestStream())
+                    {
+                        fs.CopyTo(ftpStream);
+                    }
+                }
+
+
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+                return false;
+            }
 
             return true;
 
@@ -451,13 +481,13 @@ namespace EasySignManager
 
         }
 
-        //Gets the server-sided config for a givin client
-        public string getClientConfig(string roomName) 
+        //Gets the server-sided config for a given client
+        public string getDelay(string roomName) 
         {
 
             try
             {
-                WebRequest request = WebRequest.Create(address + path + roomName + "/config.txt");
+                WebRequest request = WebRequest.Create(address + path + roomName + "/delay.txt");
                 request.Credentials = new NetworkCredential(username, password);
                 request.Method = WebRequestMethods.Ftp.DownloadFile;
 
@@ -479,13 +509,40 @@ namespace EasySignManager
             
         }
 
-        //Uploads the server-sided config to the FTP Server
-        public bool uploadClientConfig(string roomName, string data) 
+        public string getDate(string roomName)
         {
 
             try
             {
-                WebRequest request = WebRequest.Create(address + path + roomName + "/config.txt");
+                WebRequest request = WebRequest.Create(address + path + roomName + "/date.txt");
+                request.Credentials = new NetworkCredential(username, password);
+                request.Method = WebRequestMethods.Ftp.DownloadFile;
+
+                using (WebResponse response = request.GetResponse())
+                {
+                    Stream s = response.GetResponseStream();
+                    StreamReader sr = new StreamReader(s);
+
+                    return sr.ReadLine();
+
+                }
+
+            }
+            catch (Exception ex)
+            {
+                return null;
+            }
+
+
+        }
+
+        //Uploads the server-sided config to the FTP Server
+        public bool uploadDelay(string roomName, string data) 
+        {
+
+            try
+            {
+                WebRequest request = WebRequest.Create(address + path + roomName + "/delay.txt");
                 request.Credentials = new NetworkCredential(username, password);
                 request.Method = WebRequestMethods.Ftp.UploadFile;
 
@@ -507,6 +564,75 @@ namespace EasySignManager
             }
 
             return false;
+
+        }
+
+        public bool uploadDate(string roomName, string data)
+        {
+
+            try
+            {
+                WebRequest request = WebRequest.Create(address + path + roomName + "/date.txt");
+                request.Credentials = new NetworkCredential(username, password);
+                request.Method = WebRequestMethods.Ftp.UploadFile;
+
+
+                using (MemoryStream fs = new MemoryStream(Encoding.ASCII.GetBytes(data)))
+                {
+                    using (Stream ftpStream = request.GetRequestStream())
+                    {
+                        fs.CopyTo(ftpStream);
+                    }
+                }
+
+
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+                return false;
+            }
+
+            return false;
+
+        }
+
+        public bool uploadHash(string p_path, string roomName)
+        {
+
+            byte[] data = File.ReadAllBytes(p_path);
+
+            String hash;
+
+            using (var sha1 = new System.Security.Cryptography.SHA1CryptoServiceProvider())
+            {
+                hash = string.Concat(sha1.ComputeHash(data).Select(x => x.ToString("X2")));
+            }
+
+            try
+            {
+                WebRequest request = WebRequest.Create(address + path + roomName + "/hash.txt");
+                request.Credentials = new NetworkCredential(username, password);
+                request.Method = WebRequestMethods.Ftp.UploadFile;
+
+
+                using (MemoryStream fs = new MemoryStream(Encoding.ASCII.GetBytes(hash)))
+                {
+                    using (Stream ftpStream = request.GetRequestStream())
+                    {
+                        fs.CopyTo(ftpStream);
+                    }
+                }
+
+
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+                return false;
+            }
+
+            return true;
 
         }
 
@@ -679,6 +805,13 @@ namespace EasySignManager
 
             byte[] data = File.ReadAllBytes(p_path);
 
+            String hash;
+
+            using (var sha1 = new System.Security.Cryptography.SHA1CryptoServiceProvider())
+            {
+                hash = string.Concat(sha1.ComputeHash(data).Select(x => x.ToString("X2")));
+            }
+
             try
             {
                 WebRequest request = WebRequest.Create(address + path + roomName + "/bild2.png");
@@ -687,6 +820,29 @@ namespace EasySignManager
 
 
                 using (MemoryStream fs = new MemoryStream(data))
+                {
+                    using (Stream ftpStream = request.GetRequestStream())
+                    {
+                        fs.CopyTo(ftpStream);
+                    }
+                }
+
+
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+                return false;
+            }
+
+            try
+            {
+                WebRequest request = WebRequest.Create(address + path + roomName + "/hash2.txt");
+                request.Credentials = new NetworkCredential(username, password);
+                request.Method = WebRequestMethods.Ftp.UploadFile;
+
+
+                using (MemoryStream fs = new MemoryStream(Encoding.ASCII.GetBytes(hash)))
                 {
                     using (Stream ftpStream = request.GetRequestStream())
                     {

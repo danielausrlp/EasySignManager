@@ -43,7 +43,7 @@ namespace EasySignManager
             parent.configfile.loadConfig();
             ftp.loadRoomList(parent.listBox1);
 
-            parent.Enabled = true;
+            parent.Enabled = true; 
 
 
         }

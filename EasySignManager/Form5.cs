@@ -40,7 +40,7 @@ namespace EasySignManager
         {
             ftpmanager ftp = new ftpmanager(parent.configfile);
 
-            cc = new clientConfig(ftp.getClientConfig(parent.listBox1.SelectedItem.ToString()));
+            cc = new clientConfig(ftp.getDelay(parent.listBox1.SelectedItem.ToString()),ftp.getDate(parent.listBox1.SelectedItem.ToString()));
 
             textBox1.Text = cc.updateInterval.ToString();
             textBox2.Text = cc.getTime();
@@ -74,12 +74,13 @@ namespace EasySignManager
                 return;
             } else if (checkBox1.Checked == false)
             {
-                ftp.uploadClientConfig(parent.listBox1.SelectedItem.ToString(), cc.getConfigWithoutDate());
+                ftp.uploadDelay(parent.listBox1.SelectedItem.ToString(), cc.getDelay());
                 this.Close();
                 return;
             }
 
-            ftp.uploadClientConfig(parent.listBox1.SelectedItem.ToString(), cc.getConfig());
+            ftp.uploadDelay(parent.listBox1.SelectedItem.ToString(), cc.getDelay());
+            ftp.uploadDate(parent.listBox1.SelectedItem.ToString(), cc.getDate());
             ftp.uploadDatedPicture(imagePath, parent.listBox1.SelectedItem.ToString());
             this.Close();
         }
@@ -135,41 +136,36 @@ namespace EasySignManager
         public DateTime updateDate;
         public bool enableCheckBox = false;
 
-        public clientConfig(String s)
+        public clientConfig(String s, String s2)
         {
-            formatAndInitializeClientConfig(s);
+            formatAndInitializeClientConfig(s,s2);
         }
 
         //Initializes the parameters
-        public void formatAndInitializeClientConfig(String s)
+        public void formatAndInitializeClientConfig(String s, String s2)
         {
-            if (s == null)
+            if (s == null || s2 == null)
                 return;
 
-            String[] temp = s.Split(';');
 
-            if (temp.Length != 2) //fucking bullshit
-            {
-                updateInterval = Int32.Parse(temp[0]);
-                //MessageBox.Show(temp.Length.ToString());
-                return;
-            }
+            updateInterval = Int32.Parse(s);
+            updateDate = DateTime.Parse(s2);
 
-            updateInterval = Int32.Parse(temp[0]);
-            updateDate = DateTime.Parse(temp[1]);
             enableCheckBox = true;
 
         }
 
-        public string getConfig()
-        {
-            return updateInterval.ToString() + ";" + updateDate.ToString();
-        }
-
-        public string getConfigWithoutDate()
+        public string getDelay()
         {
             return updateInterval.ToString();
         }
+
+        public string getDate()
+        {
+            return updateDate.ToString();
+        }
+
+
 
         //holy shit
         static public DateTime formatDateTimeWithCorrectTime(DateTime d, string time)
