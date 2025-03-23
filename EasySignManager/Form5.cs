@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Data;
 using System.Drawing;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -75,6 +76,9 @@ namespace EasySignManager
             } else if (checkBox1.Checked == false)
             {
                 ftp.uploadDelay(parent.listBox1.SelectedItem.ToString(), cc.getDelay());
+                ftp.deleteFile(parent.listBox1.SelectedItem.ToString(), "date.txt");
+                ftp.deleteFile(parent.listBox1.SelectedItem.ToString(), "hash2.txt");
+                ftp.deleteFile(parent.listBox1.SelectedItem.ToString(), "bild2.png");
                 this.Close();
                 return;
             }
@@ -144,8 +148,17 @@ namespace EasySignManager
         //Initializes the parameters
         public void formatAndInitializeClientConfig(String s, String s2)
         {
-            if (s == null || s2 == null)
+
+            if (s == null)
+            {
                 return;
+            }
+            if (s2 == null)
+            {
+                updateInterval = Int32.Parse(s);
+                enableCheckBox = false;
+                return;
+            }
 
 
             updateInterval = Int32.Parse(s);

@@ -882,6 +882,29 @@ namespace EasySignManager
         
         }
 
+        public bool deleteFile(string roomName, string filename)
+        {
+
+            try
+            {
+                WebRequest request = WebRequest.Create(address + path + roomName + "/" + filename);
+                request.Credentials = new NetworkCredential(username, password);
+                request.Method = WebRequestMethods.Ftp.DeleteFile;
+
+                using (FtpWebResponse response = (FtpWebResponse)request.GetResponse())
+                {
+                }
+
+            }
+            catch (Exception ex)
+            {
+                //MessageBox.Show(ex.Message);
+                return false;
+            }
+
+            return true;
+        }
+
 
     }
 
